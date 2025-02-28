@@ -1,2 +1,3 @@
 #proxies
 
+DOMAIN-SUFFIX,azurefd.net
