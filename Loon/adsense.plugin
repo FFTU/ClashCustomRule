@@ -1,6 +1,7 @@
 #!name=自用app去广告
 #!desc=去除开屏广告
 #!tag = 去广告
+#!loon_version = 3.2.6(821)
 #!icon=https://raw.githubusercontent.com/sooyaaabo/Loon/main/Icon/Other-Icon/AdReject.png
 #!date = 2025-03-19
 
