@@ -357,6 +357,13 @@ function overwriteProxyGroups(params) {
             // "include-all": true,
             icon: "https://raw.githubusercontent.com/Orz-3/mini/master/Color/Microsoft.png"
         },
+        {
+            name: "🎮 Nintendo",
+            type: "select",
+            proxies: ["HK - 自动选择", "SG - 自动选择", "JP - 自动选择", "KR - 自动选择", "US - 自动选择", "UK - 自动选择", "", "DE - 自动选择", "TW - 自动选择", "其它 - 手动选择"],
+            // "include-all": true,
+            icon: "https://raw.githubusercontent.com/Koolson/Qure/master/IconSet/Color/Nintendo.png"
+        },
     ];
 
     autoProxyGroups.length &&
@@ -387,6 +394,7 @@ function overwriteRules(params) {
         "RULE-SET,apple_services,🍎 苹果服务",
         "RULE-SET,microsoft_non_ip,Ⓜ️ 微软服务",
         "RULE-SET,ai_non_ip,🤖 AIGC",
+        "RULE-SET,nintendo_list,🎮 Nintendo",
         "RULE-SET,global_non_ip,🎯 节点选择",
         "RULE-SET,domestic_non_ip,DIRECT",
         "RULE-SET,direct_non_ip,DIRECT",
@@ -459,6 +467,16 @@ function overwriteRules(params) {
             behavior: "classical",
             url: "https://ruleset.skk.moe/Clash/non_ip/ai.txt",
             path: "./rule_set/sukkaw_ruleset/ai_non_ip.txt",
+            interval: 43200,
+            format: "text",
+            proxy: "🎯 节点选择"
+        },
+         // Nintendo
+        nintendo_list: {
+            type: "http",
+            behavior: "classical",
+            url: "https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/Nintendo/Nintendo.list",
+            path: "./rule_set/blackmatrix7/Nintendo.list",
             interval: 43200,
             format: "text",
             proxy: "🎯 节点选择"
