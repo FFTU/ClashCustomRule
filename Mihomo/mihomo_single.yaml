@@ -72,13 +72,6 @@ dns:
     doh.pub: 119.29.29.29
     dns.pub: 119.29.29.29
     doh.360.cn: 101.198.198.198
-    rule-set:mihomo_nameserver_policy_alibaba: quic://dns.alidns.com:853
-    rule-set:mihomo_nameserver_policy_tencent: https://doh.pub/dns-query
-    rule-set:mihomo_nameserver_policy_bilibili: https://doh.pub/dns-query
-    rule-set:mihomo_nameserver_policy_xiaomi: https://doh.pub/dns-query
-    rule-set:mihomo_nameserver_policy_bytedance: 180.184.2.2
-    rule-set:mihomo_nameserver_policy_baidu: 180.76.76.76
-    rule-set:mihomo_nameserver_policy_qihoo360: https://doh.360.cn/dns-query
     rule-set:mihomo_nameserver_policy_hotspot_captive_portal: system
     "*.m2m": system
     injections.adguard.org: system
@@ -86,7 +79,6 @@ dns:
     "*.bogon": system
     rule-set:mihomo_nameserver_policy_lan_without_real_ip: system
     rule-set:mihomo_nameserver_policy_lan_with_realip: system
-    "zte.home": system
 
 ### 域名嗅探
 sniffer:
@@ -102,7 +94,6 @@ sniffer:
   skip-domain:
     - "Mijia Cloud"
     - "+.push.apple.com"
-    - "zte.home"
 
 ### Tunnel配置
 tun:
@@ -210,6 +201,28 @@ RuleSet_ipcidr: &RuleSet_ipcidr {type: http, behavior: ipcidr, interval: 43200, 
 
 # 订阅规则
 rule-providers:
+  mihomo_nameserver_policy_hotspot_captive_portal:
+    type: http
+    path: ./sukkaw_ruleset/mihomo_nameserver_policy_hotspot_captive_portal.txt
+    url: https://ruleset.skk.moe/Internal/mihomo_nameserver_policy/hotspot_captive_portal.txt
+    behavior: classical
+    format: text
+    interval: 43200
+  mihomo_nameserver_policy_lan_without_real_ip:
+    type: http
+    path: ./sukkaw_ruleset/mihomo_nameserver_policy_lan_without_real_ip.txt
+    url: https://ruleset.skk.moe/Internal/mihomo_nameserver_policy/lan_without_real_ip.txt
+    behavior: classical
+    format: text
+    interval: 43200
+  mihomo_nameserver_policy_lan_with_realip:
+    type: http
+    path: ./sukkaw_ruleset/mihomo_nameserver_policy_lan_with_realip.txt
+    url: https://ruleset.skk.moe/Internal/mihomo_nameserver_policy/lan_with_realip.txt
+    behavior: classical
+    format: text
+    interval: 43200
+    
   cdn_domainset:
     <<: *RuleSet_domain
     url: https://ruleset.skk.moe/Clash/domainset/cdn.txt
