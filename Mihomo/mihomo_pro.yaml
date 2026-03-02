@@ -1,0 +1,487 @@
+# Mihomo 多节点配置
+# Date：2026-03-02
+
+### 全局配置
+mixed-port: 7897
+allow-lan: true
+mode: rule
+log-level: warning
+ipv6: false
+find-process-mode: strict
+unified-delay: true
+tcp-concurrent: true
+global-client-fingerprint: chrome
+
+### 如果使用的是裸核，需要将下面的注释去掉，方便ui界面的使用
+# external-controller: 0.0.0.0:9988
+# external-ui: ui
+# external-ui-url: 'https://github.com/Zephyruso/zashboard/releases/latest/download/dist.zip'
+# secret: "fftu"
+
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+### DNS配置
+dns:
+  enable: true
+  prefer-h3: true
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  # fake-ip-filter start
+  fake-ip-filter:
+    - +.m2m
+    - injections.adguard.org
+    - local.adguard.org
+    - +.bogon
+    - +.local
+    - +.lan
+    - +.internal
+    - +.localdomain
+    - home.arpa
+    - 127.0.0.1.sslip.io
+    - 127.atlas.skk.moe
+    - dns.msftncsi.com
+    - "*.srv.nintendo.net"
+    - "*.stun.playstation.net"
+    - xbox.*.microsoft.com
+    - "*.xboxlive.com"
+    - "*.turn.twilio.com"
+    - "*.stun.twilio.com"
+    - stun.syncthing.net
+    - stun.*
+    - 127.*.*.*.sslip.io
+    - 127-*-*-*.sslip.io
+    - "*.127.*.*.*.sslip.io"
+    - "*-127-*-*-*.sslip.io"
+    - 127.*.*.*.nip.io
+    - 127-*-*-*.nip.io
+    - "*.127.*.*.*.nip.io"
+    - "*-127-*-*-*.nip.io"
+  # fake-ip-filter end
+  nameserver:
+    - https://223.5.5.5/dns-query
+    - https://doh.pub/dns-query
+  proxy-server-nameserver:
+    - https://223.5.5.5/dns-query
+    - https://doh.pub/dns-query
+  nameserver-policy:
+    dns.alidns.com: quic://223.5.5.5:853
+    dot.pub: 119.29.29.29
+    doh.pub: 119.29.29.29
+    dns.pub: 119.29.29.29
+    doh.360.cn: 101.198.198.198
+    rule-set:mihomo_nameserver_policy_alibaba: quic://dns.alidns.com:853
+    rule-set:mihomo_nameserver_policy_tencent: https://doh.pub/dns-query
+    rule-set:mihomo_nameserver_policy_bilibili: https://doh.pub/dns-query
+    rule-set:mihomo_nameserver_policy_xiaomi: https://doh.pub/dns-query
+    rule-set:mihomo_nameserver_policy_bytedance: 180.184.2.2
+    rule-set:mihomo_nameserver_policy_baidu: 180.76.76.76
+    rule-set:mihomo_nameserver_policy_qihoo360: https://doh.360.cn/dns-query
+    rule-set:mihomo_nameserver_policy_hotspot_captive_portal: system
+    "*.m2m": system
+    injections.adguard.org: system
+    local.adguard.org: system
+    "*.bogon": system
+    rule-set:mihomo_nameserver_policy_lan_without_real_ip: system
+    rule-set:mihomo_nameserver_policy_lan_with_realip: system
+
+### 域名嗅探
+sniffer:
+  enable: true
+  sniff:
+    HTTP:
+      ports: [80, 8080-8880]
+      override-destination: true
+    TLS:
+      ports: [443, 8443]
+    QUIC:
+      ports: [443, 8443]
+  skip-domain:
+    - "Mijia Cloud"
+    - "+.push.apple.com"
+
+### Tunnel配置
+tun:
+  enable: true
+  stack: system
+  device: Ethernet99
+  auto-route: true
+  auto-detect-interface: true
+  dns-hijack:
+    - any:53
+    - tcp://any:53
+  strict-route: true
+  mtu: 1500
+  # 如果有使用zerotier或者headscale等，需要自己配置排除自己的网段
+  # route-exclude-address: ["192.168.50.0/24"]
+
+### 订阅基础配置 [每天更新一次订阅节点，每 300 秒一次健康检查]
+NodeParam: &NodeParam {type: http, interval: 86400, proxy: DIRECT, health-check: {enable: true, url: 'http://connectivitycheck.platform.hicloud.com/generate_204', interval: 300}}
+
+# 订阅合集
+proxy-providers:
+  Node-1:
+    url: '替换订阅链接1'
+    <<: *NodeParam
+    path: './proxy_provider/providers-1.yaml'
+    override:
+      additional-prefix: "[优] "
+  Node-2:
+    url: '替换订阅链接2'
+    <<: *NodeParam
+    path: './proxy_provider/providers-2.yaml'
+    override:
+      additional-prefix: "[备] "
+  
+  # 如果还有其他订阅，可以继续添加
+
+# 单节点(如果你是自建节点，那么请直接在下面的proxies里添加节点配置，具体节点写法请参考 mihomo 官方文档)
+# proxies:
+#   - {name: "示例节点", type: ss, server: example.com, port: 443, cipher: aes-256-gcm, password: "password", udp: true}
+
+# 节点筛选
+# 按地区筛选
+FilterHK: &FilterHK '(🇭🇰|香港|[Hh][Kk]|Hong\s*Kong)'
+FilterTW: &FilterTW '(🇹🇼|台[湾灣]|[Tt][Ww]|Taiwan)'
+FilterUS: &FilterUS '(🇺🇸|美[国國]|America|United\s*States|[Uu][Ss])'
+FilterJP: &FilterJP '(🇯🇵|日本|东京|大阪|[Jj][Pp]|Japan)'
+FilterSG: &FilterSG '(🇸🇬|新加坡|狮城|[Ss][Gg]|Singapore)'
+FilterKR: &FilterKR '(🇰🇷|韩|韓|首尔|南朝鲜|KR|KOR|Korea|South)'
+FilterEU: &FilterEU '^(?=.*(?i)(奥|比|保|克罗地亚|塞|捷|丹|爱沙|芬|法|德|希|匈|爱尔|意|拉|立|卢|马其它|荷|波|葡|罗|斯洛伐|斯洛文|西|瑞|英|🇧🇪|🇨🇿|🇩🇰|🇫🇮|🇫🇷|🇩🇪|🇮🇪|🇮🇹|🇱🇹|🇱🇺|🇳🇱|🇵🇱|🇸🇪|🇬🇧|CDG|FRA|AMS|MAD|BCN|FCO|MUC|BRU))(?!.*(排除1|排除2|5x)).*$'
+FilterOT: &FilterOT '^(?!.*(DIRECT|直接连接|美|港|坡|台|新|日|韩|奥|比|保|克罗地亚|塞|捷|丹|爱沙|芬|法|德|希|匈|爱尔|意|拉|立|卢|马其它|荷|波|葡|罗|斯洛伐|斯洛文|西|瑞|英|🇭🇰|🇼🇸|🇹🇼|🇸🇬|🇯🇵|🇰🇷|🇺🇸|🇬🇧|🇦🇹|🇧🇪|🇨🇿|🇩🇰|🇫🇮|🇫🇷|🇩🇪|🇮🇪|🇮🇹|🇱🇹|🇱🇺|🇳🇱|🇵🇱|🇸🇪|HK|TW|SG|JP|KR|US|GB|CDG|FRA|AMS|MAD|BCN|FCO|MUC|BRU|HKG|TPE|TSA|KHH|SIN|XSP|NRT|HND|KIX|CTS|FUK|JFK|LAX|ORD|ATL|DFW|SFO|MIA|SEA|IAD|LHR|LGW))'
+FilterAL: &FilterAL '^(?!.*(DIRECT|直接连接|群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))'
+
+### 策略组基础配置
+# 手动选择
+Select: &Select {type: select, url: 'http://connectivitycheck.platform.hicloud.com/generate_204', disable-udp: false, hidden: false, include-all: true}
+# 自动选择 [每 300 秒一次惰性健康检查，容差 50ms，时延超过 2 秒判定为失败，失败 3 次自动触发健康检查]
+UrlTest: &UrlTest {type: url-test, url: 'http://connectivitycheck.platform.hicloud.com/generate_204', interval: 300, lazy: true, tolerance: 50, timeout: 2000, disable-udp: false, max-failed-times: 3, hidden: true, include-all: true}
+# 自动回退 [每 300 秒一次惰性健康检查，时延超过 2 秒判定为失败，失败 3 次自动触发健康检查]
+FallBack: &FallBack {type: fallback, url: 'http://connectivitycheck.platform.hicloud.com/generate_204', interval: 300, lazy: true, timeout: 2000, disable-udp: false, max-failed-times: 3, hidden: true, include-all: true}
+# 负载均衡 [每 300 秒一次惰性健康检查，时延超过 2 秒判定为失败，失败 3 次则自动触发健康检查]
+LoadBalance: &LoadBalance {type: load-balance, url: 'http://connectivitycheck.platform.hicloud.com/generate_204', interval: 300, lazy: true, disable-udp: false, strategy: consistent-hashing, timeout: 2000, max-failed-times: 3, hidden: true, include-all: true}
+
+# 策略组代理列表模板 - 预定义的代理节点优先级排序
+SelectBase: &SelectBase {type: select, proxies: [默认代理, 香港策略, 狮城策略, 日本策略, 韩国策略, 美国策略, 台湾策略, 欧盟策略, 冷门自选, 全球手动, DIRECT]}
+SelectUS: &SelectUS {type: select, proxies: [美国策略, 默认代理, 香港策略, 狮城策略, 日本策略, 韩国策略, 台湾策略, 欧盟策略, 冷门自选, 全球手动, DIRECT]}
+
+# 策略组
+proxy-groups:
+  # 主选择组
+  - {name: 默认代理, type: select, proxies: [香港策略, 狮城策略, 日本策略, 韩国策略, 美国策略, 台湾策略, 欧盟策略, 冷门自选, 全球手动, DIRECT], url: http://connectivitycheck.platform.hicloud.com/generate_204, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Static.png}
+
+  # 手动/Auto
+  #- {name: 手动选择, type: select, proxies: [🇭🇰-手动选择, 🇯🇵-手动选择, 🇸🇬-手动选择, 🇺🇸-手动选择, 🇹🇼-手动选择], url: http://connectivitycheck.platform.hicloud.com/generate_204, icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Cylink.png}
+  #- {name: 智能选择, type: select, proxies: [香港策略, 日本策略, 狮城策略, 美国策略, 台湾策略], url: http://connectivitycheck.platform.hicloud.com/generate_204, icon: https://raw.githubusercontent.com/Orz-3/mini/master/Color/Urltest.png}
+
+  # 媒体服务
+  - {name: 油管视频, <<: *SelectBase, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/YouTube.png}
+  - {name: 奈飞视频, <<: *SelectBase, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Netflix.png}
+  - {name: TikTok, type: select, proxies: [韩国策略, 日本策略, 香港策略, 狮城策略, 美国策略, 台湾策略, 欧盟策略, 冷门自选, 全球手动, DIRECT], icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/TikTok.png}
+  - {name: 国际媒体, <<: *SelectBase, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/DomesticMedia.png}
+
+  # 社交平台
+  - {name: 电报消息, <<: *SelectBase, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Telegram_X.png}
+
+  # 商业服务
+  - {name: 人工智能, <<: *SelectUS, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/AI.png}
+  - {name: 游戏平台, <<: *SelectBase, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Game.png}
+  - {name: 微软服务, <<: *SelectBase, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Microsoft.png}
+  - {name: 谷歌服务, <<: *SelectBase, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Google_Search.png}
+  - {name: 苹果服务, <<: *SelectBase, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Apple.png}
+
+  # 地区策略组
+  - {name: 香港策略, type: select, proxies: [香港自动测速, 香港自动回退, 香港负载均衡], include-all: true, filter: *FilterHK, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Hong_Kong.png}
+  - {name: 台湾策略, type: select, proxies: [台湾自动测速, 台湾自动回退, 台湾负载均衡], include-all: true, filter: *FilterTW, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Taiwan.png}
+  - {name: 狮城策略, type: select, proxies: [狮城自动测速, 狮城自动回退, 狮城负载均衡], include-all: true, filter: *FilterSG, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Singapore.png}
+  - {name: 日本策略, type: select, proxies: [日本自动测速, 日本自动回退, 日本负载均衡], include-all: true, filter: *FilterJP, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Japan.png}
+  - {name: 韩国策略, type: select, proxies: [韩国自动测速, 韩国自动回退, 韩国负载均衡], include-all: true, filter: *FilterKR, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Korea.png}
+  - {name: 美国策略, type: select, proxies: [美国自动测速, 美国自动回退, 美国负载均衡], include-all: true, filter: *FilterUS, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/United_States.png}
+  - {name: 欧盟策略, type: select, proxies: [欧盟自动测速, 欧盟自动回退, 欧盟负载均衡], include-all: true, filter: *FilterEU, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/European_Union.png}
+
+  # 其他策略组
+  - {name: 冷门自选, type: select, include-all: true, filter: *FilterOT, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Europe_Map.png}
+  - {name: 全球手动, type: select, include-all: true, filter: *FilterAL, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Clubhouse.png}
+
+  # 自动选择 - 按地区 - 自动测速组
+  - {name: 香港自动测速, <<: *UrlTest, filter: *FilterHK, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Auto.png}
+  - {name: 台湾自动测速, <<: *UrlTest, filter: *FilterTW, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Auto.png}
+  - {name: 狮城自动测速, <<: *UrlTest, filter: *FilterSG, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Auto.png}
+  - {name: 日本自动测速, <<: *UrlTest, filter: *FilterJP, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Auto.png}
+  - {name: 韩国自动测速, <<: *UrlTest, filter: *FilterKR, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Auto.png}
+  - {name: 美国自动测速, <<: *UrlTest, filter: *FilterUS, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Auto.png}
+  - {name: 欧盟自动测速, <<: *UrlTest, filter: *FilterEU, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Auto.png}
+
+  # 自动回退 - 按地区
+  - {name: 香港自动回退, <<: *FallBack, filter: *FilterHK, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Round_Robin_1.png}
+  - {name: 台湾自动回退, <<: *FallBack, filter: *FilterTW, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Round_Robin_1.png}
+  - {name: 狮城自动回退, <<: *FallBack, filter: *FilterSG, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Round_Robin_1.png}
+  - {name: 日本自动回退, <<: *FallBack, filter: *FilterJP, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Round_Robin_1.png}
+  - {name: 韩国自动回退, <<: *FallBack, filter: *FilterKR, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Round_Robin_1.png}
+  - {name: 美国自动回退, <<: *FallBack, filter: *FilterUS, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Round_Robin_1.png}
+  - {name: 欧盟自动回退, <<: *FallBack, filter: *FilterEU, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Round_Robin_1.png}
+  
+  # 负载均衡 - 按地区
+  - {name: 香港负载均衡, <<: *LoadBalance, filter: *FilterHK, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Round_Robin_1.png}
+  - {name: 台湾负载均衡, <<: *LoadBalance, filter: *FilterTW, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Round_Robin_1.png}
+  - {name: 狮城负载均衡, <<: *LoadBalance, filter: *FilterSG, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Round_Robin_1.png}
+  - {name: 日本负载均衡, <<: *LoadBalance, filter: *FilterJP, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Round_Robin_1.png}
+  - {name: 韩国负载均衡, <<: *LoadBalance, filter: *FilterKR, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Round_Robin_1.png}
+  - {name: 美国负载均衡, <<: *LoadBalance, filter: *FilterUS, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Round_Robin_1.png}
+  - {name: 欧盟负载均衡, <<: *LoadBalance, filter: *FilterEU, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Round_Robin_1.png}
+
+
+### 规则配置
+RuleSet_classical: &RuleSet_classical {type: http, behavior: classical, interval: 43200, format: text, proxy: 默认代理}
+RuleSet_domain: &RuleSet_domain {type: http, behavior: domain, interval: 43200, format: text, proxy: 默认代理}
+RuleSet_ipcidr: &RuleSet_ipcidr {type: http, behavior: ipcidr, interval: 43200, format: text, proxy: 默认代理}
+
+# 订阅规则
+rule-providers:
+  mihomo_nameserver_policy_alibaba:
+    type: http
+    path: ./sukkaw_ruleset/mihomo_nameserver_policy_alibaba.txt
+    url: https://ruleset.skk.moe/Internal/mihomo_nameserver_policy/alibaba.txt
+    behavior: classical
+    format: text
+    interval: 43200
+  mihomo_nameserver_policy_tencent:
+    type: http
+    path: ./sukkaw_ruleset/mihomo_nameserver_policy_tencent.txt
+    url: https://ruleset.skk.moe/Internal/mihomo_nameserver_policy/tencent.txt
+    behavior: classical
+    format: text
+    interval: 43200
+  mihomo_nameserver_policy_bilibili:
+    type: http
+    path: ./sukkaw_ruleset/mihomo_nameserver_policy_bilibili.txt
+    url: https://ruleset.skk.moe/Internal/mihomo_nameserver_policy/bilibili.txt
+    behavior: classical
+    format: text
+    interval: 43200
+  mihomo_nameserver_policy_xiaomi:
+    type: http
+    path: ./sukkaw_ruleset/mihomo_nameserver_policy_xiaomi.txt
+    url: https://ruleset.skk.moe/Internal/mihomo_nameserver_policy/xiaomi.txt
+    behavior: classical
+    format: text
+    interval: 43200
+  mihomo_nameserver_policy_bytedance:
+    type: http
+    path: ./sukkaw_ruleset/mihomo_nameserver_policy_bytedance.txt
+    url: https://ruleset.skk.moe/Internal/mihomo_nameserver_policy/bytedance.txt
+    behavior: classical
+    format: text
+    interval: 43200
+  mihomo_nameserver_policy_baidu:
+    type: http
+    path: ./sukkaw_ruleset/mihomo_nameserver_policy_baidu.txt
+    url: https://ruleset.skk.moe/Internal/mihomo_nameserver_policy/baidu.txt
+    behavior: classical
+    format: text
+    interval: 43200
+  mihomo_nameserver_policy_qihoo360:
+    type: http
+    path: ./sukkaw_ruleset/mihomo_nameserver_policy_qihoo360.txt
+    url: https://ruleset.skk.moe/Internal/mihomo_nameserver_policy/qihoo360.txt
+    behavior: classical
+    format: text
+    interval: 43200
+  mihomo_nameserver_policy_hotspot_captive_portal:
+    type: http
+    path: ./sukkaw_ruleset/mihomo_nameserver_policy_hotspot_captive_portal.txt
+    url: https://ruleset.skk.moe/Internal/mihomo_nameserver_policy/hotspot_captive_portal.txt
+    behavior: classical
+    format: text
+    interval: 43200
+  mihomo_nameserver_policy_lan_without_real_ip:
+    type: http
+    path: ./sukkaw_ruleset/mihomo_nameserver_policy_lan_without_real_ip.txt
+    url: https://ruleset.skk.moe/Internal/mihomo_nameserver_policy/lan_without_real_ip.txt
+    behavior: classical
+    format: text
+    interval: 43200
+  mihomo_nameserver_policy_lan_with_realip:
+    type: http
+    path: ./sukkaw_ruleset/mihomo_nameserver_policy_lan_with_realip.txt
+    url: https://ruleset.skk.moe/Internal/mihomo_nameserver_policy/lan_with_realip.txt
+    behavior: classical
+    format: text
+    interval: 43200
+    
+  cdn_domainset:
+    <<: *RuleSet_domain
+    url: https://ruleset.skk.moe/Clash/domainset/cdn.txt
+    path: ./rule_set/sukkaw_ruleset/cdn_domainset.txt
+
+  cdn_non_ip:
+    <<: *RuleSet_domain
+    url: https://ruleset.skk.moe/Clash/non_ip/cdn.txt
+    path: ./rule_set/sukkaw_ruleset/cdn_non_ip.txt
+
+  stream_non_ip:
+    <<: *RuleSet_classical
+    url: https://ruleset.skk.moe/Clash/non_ip/stream.txt
+    path: ./rule_set/sukkaw_ruleset/stream_non_ip.txt
+
+  stream_ip:
+    <<: *RuleSet_classical
+    url: https://ruleset.skk.moe/Clash/ip/stream.txt
+    path: ./rule_set/sukkaw_ruleset/stream_ip.txt
+
+  ai_non_ip:
+    <<: *RuleSet_classical
+    url: https://ruleset.skk.moe/Clash/non_ip/ai.txt
+    path: ./rule_set/sukkaw_ruleset/ai_non_ip.txt
+
+  telegram_non_ip:
+    <<: *RuleSet_classical
+    url: https://ruleset.skk.moe/Clash/non_ip/telegram.txt
+    path: ./rule_set/sukkaw_ruleset/telegram_non_ip.txt
+
+  telegram_ip:
+    <<: *RuleSet_classical
+    url: https://ruleset.skk.moe/Clash/ip/telegram.txt
+    path: ./rule_set/sukkaw_ruleset/telegram_ip.txt
+
+  apple_cdn:
+    <<: *RuleSet_domain
+    url: https://ruleset.skk.moe/Clash/domainset/apple_cdn.txt
+    path: ./rule_set/sukkaw_ruleset/apple_cdn.txt
+
+  apple_services:
+    <<: *RuleSet_classical
+    url: https://ruleset.skk.moe/Clash/non_ip/apple_services.txt
+    path: ./rule_set/sukkaw_ruleset/apple_services.txt
+
+  apple_cn_non_ip:
+    <<: *RuleSet_classical
+    url: https://ruleset.skk.moe/Clash/non_ip/apple_cn.txt
+    path: ./rule_set/sukkaw_ruleset/apple_cn_non_ip.txt
+
+  microsoft_cdn_non_ip:
+    <<: *RuleSet_classical
+    url: https://ruleset.skk.moe/Clash/non_ip/microsoft_cdn.txt
+    path: ./rule_set/sukkaw_ruleset/microsoft_cdn_non_ip.txt
+
+  microsoft_non_ip:
+    <<: *RuleSet_classical
+    url: https://ruleset.skk.moe/Clash/non_ip/microsoft.txt
+    path: ./rule_set/sukkaw_ruleset/microsoft_non_ip.txt
+
+  download_domainset:
+    <<: *RuleSet_domain
+    url: https://ruleset.skk.moe/Clash/domainset/download.txt
+    path: ./rule_set/sukkaw_ruleset/download_domainset.txt
+
+  download_non_ip:
+    <<: *RuleSet_domain
+    url: https://ruleset.skk.moe/Clash/non_ip/download.txt
+    path: ./rule_set/sukkaw_ruleset/download_non_ip.txt
+
+  lan_non_ip:
+    <<: *RuleSet_classical
+    url: https://ruleset.skk.moe/Clash/non_ip/lan.txt
+    path: ./rule_set/sukkaw_ruleset/lan_non_ip.txt
+
+  lan_ip:
+    <<: *RuleSet_classical
+    url: https://ruleset.skk.moe/Clash/ip/lan.txt
+    path: ./rule_set/sukkaw_ruleset/lan_ip.txt
+
+  domestic_non_ip:
+    <<: *RuleSet_classical
+    url: https://ruleset.skk.moe/Clash/non_ip/domestic.txt
+    path: ./rule_set/sukkaw_ruleset/domestic_non_ip.txt
+
+  direct_non_ip:
+    <<: *RuleSet_classical
+    url: https://ruleset.skk.moe/Clash/non_ip/direct.txt
+    path: ./rule_set/sukkaw_ruleset/direct_non_ip.txt
+
+  global_non_ip:
+    <<: *RuleSet_classical
+    url: https://ruleset.skk.moe/Clash/non_ip/global.txt
+    path: ./rule_set/sukkaw_ruleset/global_non_ip.txt
+
+  domestic_ip:
+    <<: *RuleSet_classical
+    url: https://ruleset.skk.moe/Clash/ip/domestic.txt
+    path: ./rule_set/sukkaw_ruleset/domestic_ip.txt
+
+  china_ip:
+    <<: *RuleSet_ipcidr
+    url: https://ruleset.skk.moe/Clash/ip/china_ip.txt
+    path: ./rule_set/sukkaw_ruleset/china_ip.txt
+  
+  private_tracker:
+    <<: *RuleSet_ipcidr
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/PrivateTracker/PrivateTracker.list
+    path: ./rule_set/blackmatrix7/private_tracker.list
+
+  nintendo_list:
+    <<: *RuleSet_classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/Nintendo/Nintendo.list
+    path: ./rule_set/blackmatrix7/nintendo_list.list
+
+  Game:
+    <<: *RuleSet_classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/Game/Game.list
+    path: .listt
+
+  YouTube:
+    <<: *RuleSet_classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/YouTube/YouTube.list
+    path: ./rule_set/blackmatrix7/YouTube.list
+
+  Google:
+    <<: *RuleSet_classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/Google/Google.list
+    path: ./rule_set/blackmatrix7/Google.list
+
+  Netflix_IP:
+    <<: *RuleSet_ipcidr
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/Netflix/Netflix_IP.txt
+    path: ./rule_set/blackmatrix7/Netflix_IP.list
+
+  TikTok:
+    <<: *RuleSet_classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/TikTok/TikTok.list
+    path: ./rule_set/blackmatrix7/TikTok.list
+
+# 分流规则
+rules:
+  ### 非 IP 类规则
+  - RULE-SET,apple_cdn,DIRECT
+  - RULE-SET,domestic_non_ip,DIRECT
+  - RULE-SET,direct_non_ip,DIRECT
+  - RULE-SET,lan_non_ip,DIRECT
+  - RULE-SET,microsoft_cdn_non_ip,DIRECT
+  - RULE-SET,apple_cn_non_ip,DIRECT
+
+  - RULE-SET,cdn_domainset,默认代理
+  - RULE-SET,cdn_non_ip,默认代理
+  - RULE-SET,YouTube,油管视频
+  - RULE-SET,stream_non_ip,国际媒体
+  - RULE-SET,telegram_non_ip,电报消息
+  - RULE-SET,Game,游戏平台
+  - RULE-SET,download_domainset,默认代理
+  - RULE-SET,download_non_ip,默认代理
+
+  - RULE-SET,ai_non_ip,人工智能
+  - RULE-SET,Google,谷歌服务
+  - RULE-SET,apple_services,苹果服务
+  - RULE-SET,microsoft_non_ip,微软服务
+  - RULE-SET,global_non_ip,默认代理
+
+  
+  ### IP 类规则
+  - RULE-SET,telegram_ip,电报消息
+  - RULE-SET,Netflix_IP,奈飞视频
+  - RULE-SET,stream_ip,国际媒体
+  - RULE-SET,lan_ip,DIRECT
+  - RULE-SET,domestic_ip,DIRECT
+  - RULE-SET,china_ip,DIRECT
+  - MATCH,默认代理
