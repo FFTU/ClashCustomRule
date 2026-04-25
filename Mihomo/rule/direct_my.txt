@@ -1,4 +1,4 @@
-#direct
+#DIRECT
 
 DOMAIN-SUFFIX,ebaolife.net
 DOMAIN-SUFFIX,sonatype.org
@@ -12,7 +12,9 @@ DOMAIN-SUFFIX,qq.com
 DOMAIN-KEYWORD,amap
 DOMAIN-SUFFIX,fangfangtu.vip
 DOMAIN-SUFFIX,istatmenus.app
-
+DOMAIN-KEYWORD,5bx6h.net
+DOMAIN-KEYWORD,easyenable.com
+IP-CIDR,47.112.222.0/24
 
 
 
