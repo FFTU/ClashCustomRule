@@ -1,5 +1,5 @@
 # Mihomo 多节点配置
-# Date：2026-03-02
+# Date：2026-04
 
 ### 全局配置
 mixed-port: 7897
@@ -418,34 +418,40 @@ rule-providers:
     url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Nintendo/Nintendo.list
     path: ./rule_set/blackmatrix7/nintendo_list.list
 
-  Game:
+  game:
     <<: *RuleSet_classical
     url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Game/Game.list
-    path: .listt
+    path: ./rule_set/blackmatrix7/game.list
 
-  YouTube:
+  youtube:
     <<: *RuleSet_classical
     url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/YouTube/YouTube.list
-    path: ./rule_set/blackmatrix7/YouTube.list
+    path: ./rule_set/blackmatrix7/youtube.list
 
-  Google:
+  google:
     <<: *RuleSet_classical
     url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Google/Google.list
-    path: ./rule_set/blackmatrix7/Google.list
+    path: ./rule_set/blackmatrix7/google.list
 
-  Netflix_IP:
+  netflix_ip:
     <<: *RuleSet_ipcidr
     url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/Netflix/Netflix_IP.txt
-    path: ./rule_set/blackmatrix7/Netflix_IP.list
+    path: ./rule_set/blackmatrix7/netflix_ip.list
 
-  TikTok:
+  tiktok:
     <<: *RuleSet_classical
     url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/TikTok/TikTok.list
-    path: ./rule_set/blackmatrix7/TikTok.list
+    path: ./rule_set/blackmatrix7/tiktok.list
+
+  my_direct:
+    <<: *RuleSet_classical
+    url: https://raw.githubusercontent.com/FFTU/ClashCustomRule/refs/heads/main/Mihomo/rule/direct_my.txt
+    path: ./rule_set/my/my_direct.list
 
 # 分流规则
 rules:
   ### 非 IP 类规则
+  - RULE-SET,my_direct,DIRECT
   - RULE-SET,apple_cdn,DIRECT
   - RULE-SET,domestic_non_ip,DIRECT
   - RULE-SET,direct_non_ip,DIRECT
@@ -455,15 +461,15 @@ rules:
 
   - RULE-SET,cdn_domainset,默认代理
   - RULE-SET,cdn_non_ip,默认代理
-  - RULE-SET,YouTube,油管视频
+  - RULE-SET,youtube,油管视频
   - RULE-SET,stream_non_ip,国际媒体
   - RULE-SET,telegram_non_ip,电报消息
-  - RULE-SET,Game,游戏平台
+  - RULE-SET,game,游戏平台
   - RULE-SET,download_domainset,默认代理
   - RULE-SET,download_non_ip,默认代理
 
   - RULE-SET,ai_non_ip,人工智能
-  - RULE-SET,Google,谷歌服务
+  - RULE-SET,google,谷歌服务
   - RULE-SET,apple_services,苹果服务
   - RULE-SET,microsoft_non_ip,微软服务
   - RULE-SET,global_non_ip,默认代理
@@ -471,7 +477,7 @@ rules:
   
   ### IP 类规则
   - RULE-SET,telegram_ip,电报消息
-  - RULE-SET,Netflix_IP,奈飞视频
+  - RULE-SET,netflix_ip,奈飞视频
   - RULE-SET,stream_ip,国际媒体
   - RULE-SET,lan_ip,DIRECT
   - RULE-SET,domestic_ip,DIRECT
