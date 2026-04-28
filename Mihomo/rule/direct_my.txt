@@ -16,5 +16,7 @@ DOMAIN-KEYWORD,5bx6h.net
 DOMAIN-KEYWORD,easyenable.com
 IP-CIDR,47.112.222.0/24
 
+#PT
+DOMAIN-SUFFIX,hhanclub.net
 
 
