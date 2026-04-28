@@ -1,3 +1,60 @@
+# === OS 产生的垃圾文件 ===
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+*.tmp
+
+# === 编辑器/IDE 配置 ===
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+.netrwhist
 .history
 
-.vscode
+# === 开发环境/Node 依赖 ===
+node_modules/
+dist/
+build/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# === PHP 依赖 (Composer) ===
+/vendor/
+composer.lock
+.php_cs.cache
+.phpunit.result.cache
+
+# === 环境变量 & 敏感信息 (非常重要!) ===
+.env
+.env.local
+.env.*.local
+.env.testing
+config/database.php
+*.key
+*.pem
+*.cert
+
+# === 日志 & 缓存 ===
+storage/*.log
+storage/framework/cache/data/*
+storage/framework/sessions/*
+storage/framework/views/*
+storage/app/public/*
+runtime/
+temp/
+logs/
+
+# === Docker 相关 (如果你在 QNAP 或本地用 Docker) ===
+.docker/
+docker-compose.override.yml
+
+# === 特殊文件 ===
+.well-known/
+.DS_Store?
