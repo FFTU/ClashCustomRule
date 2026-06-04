@@ -18,5 +18,5 @@ IP-CIDR,47.112.222.0/24
 
 #PT
 DOMAIN-SUFFIX,hhanclub.net
-
+DOMAIN-SUFFIX,pterclub.net
 
