@@ -1,5 +1,5 @@
 # Mihomo 多节点配置
-# Date：2026-04
+# Date：2026-06
 
 ### 全局配置
 mixed-port: 7897
@@ -167,6 +167,7 @@ proxy-groups:
 
   # 社交平台
   - {name: 电报消息, <<: *SelectBase, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Telegram_X.png}
+  - {name: Twitter, type: select, proxies: [美国策略, 狮城策略, 台湾策略, 日本策略], icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Twitter.png}
 
   # 商业服务
   - {name: 人工智能, <<: *SelectUS, icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/AI.png}
@@ -435,6 +436,11 @@ rule-providers:
     url: https://cdn.jsdelivr.net/gh/blackmatrix7/ios_rule_script@master/rule/Clash/TikTok/TikTok.list
     path: ./rule_set/blackmatrix7/tiktok.list
 
+  twitter:
+    <<: *RuleSet_classical
+    url: https://raw.githubusercontent.com/blackmatrix7/ios_rule_script/refs/heads/master/rule/Clash/Twitter/Twitter.list
+    path: ./rule_set/blackmatrix7/twitter.list
+
   my_direct:
     <<: *RuleSet_classical
     url: https://raw.githubusercontent.com/FFTU/ClashCustomRule/refs/heads/main/Mihomo/rule/direct_my.txt
@@ -452,10 +458,12 @@ rules:
   - RULE-SET,microsoft_cdn_non_ip,DIRECT
   - RULE-SET,apple_cn_non_ip,DIRECT
 
+  - RULE-SET,ai_non_ip,人工智能
   - RULE-SET,cdn_domainset,默认代理
   - RULE-SET,cdn_non_ip,默认代理
   - RULE-SET,youtube,油管视频
   - RULE-SET,tiktok,TikTok
+  - RULE-SET,twitter,Twitter
   - RULE-SET,stream_non_ip,国际媒体
   - RULE-SET,telegram_non_ip,电报消息
   - RULE-SET,nintendo_list,Nintendo
@@ -463,7 +471,6 @@ rules:
   - RULE-SET,download_domainset,默认代理
   - RULE-SET,download_non_ip,默认代理
 
-  - RULE-SET,ai_non_ip,人工智能
   - RULE-SET,google,谷歌服务
   - RULE-SET,apple_services,苹果服务
   - RULE-SET,microsoft_non_ip,微软服务
