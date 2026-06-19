@@ -139,7 +139,7 @@ proxy-providers:
 # 按地区筛选
 FilterHK: &FilterHK '(🇭🇰|香港|[Hh][Kk]|Hong\s*Kong)'
 FilterTW: &FilterTW "(🇹🇼|台[湾灣]|[Tt][Ww]|Taiwan)"
-FilterUS: &FilterUS '(🇺🇸|美[国國]|America|United\s*States|[Uu][Ss])'
+FilterUS: &FilterUS '(🇺🇸|美[国國]|America|United\s*States|\b[Uu][Ss]\b)'
 FilterJP: &FilterJP "(🇯🇵|日本|东京|大阪|[Jj][Pp]|Japan)"
 FilterSG: &FilterSG "(🇸🇬|新加坡|狮城|[Ss][Gg]|Singapore)"
 FilterKR: &FilterKR "(🇰🇷|韩|韓|首尔|南朝鲜|KR|KOR|Korea|South)"
@@ -218,24 +218,7 @@ SelectBase:
         DIRECT,
       ],
   }
-SelectUS:
-  &SelectUS {
-    type: select,
-    proxies:
-      [
-        美国策略,
-        默认代理,
-        香港策略,
-        狮城策略,
-        日本策略,
-        韩国策略,
-        台湾策略,
-        欧盟策略,
-        冷门自选,
-        全球手动,
-        DIRECT,
-      ],
-  }
+SelectUS: &SelectUS { type: select, include-all: true, filter: *FilterUS }
 
 # 策略组
 proxy-groups:
@@ -267,7 +250,19 @@ proxy-groups:
   # 媒体服务
   - {
       name: 油管视频,
-      <<: *SelectBase,
+      type: select,
+      proxies:
+        [
+          美国策略,
+          狮城策略,
+          日本策略,
+          香港策略,
+          台湾策略,
+          韩国策略,
+          欧盟策略,
+          冷门自选,
+          全球手动,
+        ],
       icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/YouTube.png,
     }
   - {
@@ -280,8 +275,8 @@ proxy-groups:
       type: select,
       proxies:
         [
-          韩国策略,
           日本策略,
+          韩国策略,
           香港策略,
           狮城策略,
           美国策略,
