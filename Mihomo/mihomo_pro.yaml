@@ -100,7 +100,7 @@ tun:
   # 如果有使用zerotier或者headscale等，需要自己配置排除自己的网段
   # route-exclude-address: ["192.168.50.0/24"]
 
-### 订阅基础配置 [每天更新一次订阅节点，每 300 秒一次健康检查]
+### 订阅基础配置 [每 10 分钟更新一次订阅节点，每 300 秒一次健康检查]
 NodeParam:
   &NodeParam {
     type: http,
@@ -139,10 +139,12 @@ proxy-providers:
 # 按地区筛选
 FilterHK: &FilterHK '(🇭🇰|香港|[Hh][Kk]|Hong\s*Kong)'
 FilterTW: &FilterTW "(🇹🇼|台[湾灣]|[Tt][Ww]|Taiwan)"
-FilterUS: &FilterUS '(🇺🇸|美[国國]|America|United\s*States|\b[Uu][Ss]\b)'
+FilterUS: &FilterUS '(?i)(?:🇺🇸|美[国國]|(?:^|[^a-z])US(?:A)?(?:$|[^a-z])|United\s*States)'
+# 反引号分隔的筛选条件按顺序排列：美国家宽优先，其余美国节点随后
+FilterAI: &FilterAI '(?i)^(?=.*(?:🇺🇸|美[国國]|(?:^|[^a-z])US(?:A)?(?:$|[^a-z])|United\s*States))(?=.*(?:家宽|家庭宽带|住宅|Residential|Home\s*Broadband)).*$`(?i)(?:🇺🇸|美[国國]|(?:^|[^a-z])US(?:A)?(?:$|[^a-z])|United\s*States)'
 FilterJP: &FilterJP "(🇯🇵|日本|东京|大阪|[Jj][Pp]|Japan)"
 FilterSG: &FilterSG "(🇸🇬|新加坡|狮城|[Ss][Gg]|Singapore)"
-FilterKR: &FilterKR "(🇰🇷|韩|韓|首尔|南朝鲜|KR|KOR|Korea|South)"
+FilterKR: &FilterKR '(?i)(?:🇰🇷|韩|韓|首[尔爾]|南朝[鲜鮮]|(?:^|[^a-z])(?:KR|KOR|Korea)(?:$|[^a-z]))'
 FilterEU: &FilterEU "^(?=.*(?i)(奥|比|保|克罗地亚|塞|捷|丹|爱沙|芬|法|德|希|匈|爱尔|意|拉|立|卢|马其它|荷|波|葡|罗|斯洛伐|斯洛文|西|瑞|英|🇧🇪|🇨🇿|🇩🇰|🇫🇮|🇫🇷|🇩🇪|🇮🇪|🇮🇹|🇱🇹|🇱🇺|🇳🇱|🇵🇱|🇸🇪|🇬🇧|CDG|FRA|AMS|MAD|BCN|FCO|MUC|BRU))(?!.*(排除1|排除2|5x)).*$"
 FilterOT: &FilterOT "^(?!.*(DIRECT|直接连接|美|港|坡|台|新|日|韩|奥|比|保|克罗地亚|塞|捷|丹|爱沙|芬|法|德|希|匈|爱尔|意|拉|立|卢|马其它|荷|波|葡|罗|斯洛伐|斯洛文|西|瑞|英|🇭🇰|🇼🇸|🇹🇼|🇸🇬|🇯🇵|🇰🇷|🇺🇸|🇬🇧|🇦🇹|🇧🇪|🇨🇿|🇩🇰|🇫🇮|🇫🇷|🇩🇪|🇮🇪|🇮🇹|🇱🇹|🇱🇺|🇳🇱|🇵🇱|🇸🇪|HK|TW|SG|JP|KR|US|GB|CDG|FRA|AMS|MAD|BCN|FCO|MUC|BRU|HKG|TPE|TSA|KHH|SIN|XSP|NRT|HND|KIX|CTS|FUK|JFK|LAX|ORD|ATL|DFW|SFO|MIA|SEA|IAD|LHR|LGW))"
 FilterAL: &FilterAL "^(?!.*(DIRECT|直接连接|群|邀请|返利|循环|官网|客服|网站|网址|获取|订阅|流量|到期|机场|下次|版本|官址|备用|过期|已用|联系|邮箱|工单|贩卖|通知|倒卖|防止|国内|地址|频道|无法|说明|使用|提示|特别|访问|支持|教程|关注|更新|作者|加入|USE|USED|TOTAL|EXPIRE|EMAIL|Panel|Channel|Author))"
@@ -168,6 +170,7 @@ UrlTest:
     timeout: 2000,
     disable-udp: false,
     max-failed-times: 3,
+    empty-fallback: REJECT,
     hidden: true,
     include-all: true,
   }
@@ -181,6 +184,7 @@ FallBack:
     timeout: 2000,
     disable-udp: false,
     max-failed-times: 3,
+    empty-fallback: REJECT,
     hidden: true,
     include-all: true,
   }
@@ -195,6 +199,7 @@ LoadBalance:
     strategy: consistent-hashing,
     timeout: 2000,
     max-failed-times: 3,
+    empty-fallback: REJECT,
     hidden: true,
     include-all: true,
   }
@@ -218,7 +223,6 @@ SelectBase:
         DIRECT,
       ],
   }
-SelectUS: &SelectUS { type: select, include-all: true, filter: *FilterUS }
 
 # 策略组
 proxy-groups:
@@ -310,7 +314,12 @@ proxy-groups:
   # 商业服务
   - {
       name: 人工智能,
-      <<: *SelectUS,
+      <<: *FallBack,
+      filter: *FilterAI,
+      url: "https://www.gstatic.com/generate_204",
+      expected-status: 204,
+      empty-fallback: REJECT,
+      hidden: false,
       icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/AI.png,
     }
   - {
@@ -336,6 +345,19 @@ proxy-groups:
   - {
       name: 苹果服务,
       <<: *SelectBase,
+      proxies:
+        [
+          DIRECT,
+          默认代理,
+          香港策略,
+          狮城策略,
+          日本策略,
+          韩国策略,
+          美国策略,
+          台湾策略,
+          欧盟策略,
+          冷门自选,
+        ],
       icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Apple.png,
     }
 
@@ -403,6 +425,7 @@ proxy-groups:
       type: select,
       include-all: true,
       filter: *FilterOT,
+      empty-fallback: REJECT,
       icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Europe_Map.png,
     }
   - {
@@ -410,6 +433,7 @@ proxy-groups:
       type: select,
       include-all: true,
       filter: *FilterAL,
+      empty-fallback: REJECT,
       icon: https://github.com/Koolson/Qure/raw/master/IconSet/Color/Clubhouse.png,
     }
 
@@ -650,7 +674,7 @@ rule-providers:
     path: ./rule_set/sukkaw_ruleset/cdn_domainset.txt
 
   cdn_non_ip:
-    <<: *RuleSet_domain
+    <<: *RuleSet_classical
     url: https://ruleset.skk.moe/Clash/non_ip/cdn.txt
     path: ./rule_set/sukkaw_ruleset/cdn_non_ip.txt
 
@@ -710,7 +734,7 @@ rule-providers:
     path: ./rule_set/sukkaw_ruleset/download_domainset.txt
 
   download_non_ip:
-    <<: *RuleSet_domain
+    <<: *RuleSet_classical
     url: https://ruleset.skk.moe/Clash/non_ip/download.txt
     path: ./rule_set/sukkaw_ruleset/download_non_ip.txt
 
@@ -808,10 +832,7 @@ rules:
   - RULE-SET,my_direct,DIRECT
   - RULE-SET,private_tracker,DIRECT
   - RULE-SET,lan_non_ip,DIRECT
-  - RULE-SET,lan_ip,DIRECT
   - RULE-SET,domestic_non_ip,DIRECT
-  - RULE-SET,domestic_ip,DIRECT
-  - RULE-SET,china_ip,DIRECT
   - RULE-SET,direct_non_ip,DIRECT
   - RULE-SET,apple_cdn,DIRECT
   - RULE-SET,apple_cn_non_ip,DIRECT
@@ -847,6 +868,13 @@ rules:
   - RULE-SET,apple_services,苹果服务
   - RULE-SET,microsoft_non_ip,微软服务
 
-  # ===== 全球兜底 =====
+  # ===== 全球域名 =====
   - RULE-SET,global_non_ip,默认代理
+
+  # ===== IP 规则：域名规则之后匹配 =====
+  - RULE-SET,lan_ip,DIRECT
+  - RULE-SET,domestic_ip,DIRECT
+  - RULE-SET,china_ip,DIRECT
+
+  # ===== 最终兜底 =====
   - MATCH,默认代理
